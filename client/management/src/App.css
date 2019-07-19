@@ -1,3 +1,9 @@
 .gray-background {
   background: darkgray
 }
+
+.image-profile {
+  width: 64px;
+  height: 64px;
+  margin: 1em;
+}

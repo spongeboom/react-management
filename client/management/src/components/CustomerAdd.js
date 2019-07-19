@@ -14,7 +14,6 @@ const styles = theme => ({
   }
 })
 
-
 class CustomerAdd extends React.Component {
 
   constructor(props){
@@ -113,10 +112,10 @@ class CustomerAdd extends React.Component {
                   </Button>
                 </label>
                 <br/>
-                <TextField label="이름" type="text" name="userName" value={this.state.userName} onChange={this.handleValueChange} /><br/>
-                <TextField label="생년월일" type="text" name="birthday" value={this.state.birthday} onChange={this.handleValueChange} /><br/>
-                <TextField label="성별" type="text" name="gender" value={this.state.gender} onChange={this.handleValueChange} /><br/>
-                <TextField label="직업" type="text" name="job" value={this.state.job} onChange={this.handleValueChange} /><br/>
+                <TextField label="이름" type="text" name="userName" value={this.state.userName} onChange={this.handleValueChange} /><br/><br/>
+                <TextField id="date" label="생년월일" type="date" name="birthday" InputLabelProps={{shrink:true,}} value={this.state.birthday} onChange={this.handleValueChange} /><br/><br/>
+                <TextField label="성별" type="text" name="gender" value={this.state.gender} onChange={this.handleValueChange} /><br/><br/>
+                <TextField label="직업" type="text" name="job" value={this.state.job} onChange={this.handleValueChange} /><br/><br/>
               </DialogContent>
               <DialogActions>
                 <Button variant="contained" color="primary" onClick={this.handleFormSubmit}>추가</Button>
