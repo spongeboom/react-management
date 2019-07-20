@@ -5,6 +5,10 @@
 
 # database
 /database.json
+/env.config.js
+/envdevelopment.js
+/envproduction.js
+/env.js
 
 # dependencies
 /node_modules

@@ -8,10 +8,12 @@ const express =require('express')
     , conf = JSON.parse(data)
     , multer = require('multer')
     , upload = multer({dest: './upload'})
+    , env = require('./env.config.js')
+    , cors = require('cors')
 
+app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-
       conn = mysql.createConnection({
         host:conf.host,
         user:conf.user,
@@ -20,6 +22,9 @@ app.use(bodyParser.urlencoded({extended: true}));
         database:conf.database
       })
   conn.connect();
+
+auth = require('./route/auth.js')
+app.use('/auth', auth)
 
   app.get('/api/customers', (req, res) => {
     conn.query("SELECT * FROM CUSTOMER WHERE isDeleted=0", (err,rows, fields) => {
@@ -35,6 +40,7 @@ app.use(bodyParser.urlencoded({extended: true}));
   })
 
   app.use('/image',express.static('./upload'));
+
   app.post('/api/customers',upload.single('image'),(req,res) =>{
     let sql = 'INSERT INTO CUSTOMER VALUES (null,?,?,?,?,?,now(),0)'
       , image = '/image/' + req.file.filename
@@ -58,6 +64,6 @@ app.use(bodyParser.urlencoded({extended: true}));
       })
   })
 
-  app.listen(port, () => {
-     console.log('server on...')
+  app.listen(env.port, () => {
+     console.log('server on...' + env.port + ' port')
   })
