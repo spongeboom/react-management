@@ -1,14 +1,14 @@
 import React from 'react';
 import './App.css';
 import { Switch, Route,Redirect, BrowserRouter} from 'react-router-dom';
-import ManagePages from './pages/ManagePages';
-import Login from './components/Login';
-import Content from 'react-mdl';
+import ManagePage from './pages/ManagePage';
+import LoginPage from './pages/LoginPage';
+import NotFoundPage from './pages/404';
 
-const PrivateRoute = ({component: Component,authed, ...rest}) => {
+const PrivateRoute = ({component: Component,authed,loginstate, ...rest}) => {
   return (
       <Route {...rest} render={(props) =>
-        authed ===true ? <Component {...props} /> : <Redirect to={{pathname: '/login', state: { from : props.location}}} />}
+        authed ===true ? <Component login={authed} loginstate={loginstate} /> : <Redirect to={{pathname: '/login', state: { from : props.location}}} />}
       />
   )
 }
@@ -18,33 +18,30 @@ class App extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      session:false
+      authed:false
     }
   }
 
   LoginCurrent = async() => {
     var session = await (await fetch('/auth/logined')).json()
-    this.setState({session:session.isLogined})
+    this.setState({authed:session.isLogined})
   }
 
   componentDidMount(){
     this.LoginCurrent();
-    console.log(this.state.session);
   }
 
-  Loginstate = () => {
+  loginState = () => {
     this.LoginCurrent();
-    console.log(this.state.session);
   }
 
   render(){
     return(
       <BrowserRouter>
-        <div>
-        </div>
           <Switch>
-            <PrivateRoute authed={this.state.session} exact path="/" component={ManagePages} />
-            <Route path='/login' render={(props) => <Login login={this.state.session} location = {props.location} fnc ={this.Loginstate} />}/>
+            <PrivateRoute authed={this.state.authed} loginstate={this.loginState} exact path="/" component={ManagePage} />
+            <Route path='/login' render={(props) => <LoginPage authed={this.state.authed} location={props.location} loginstate ={this.loginState} />}/>
+            <Route path='*' component={NotFoundPage}/>
           </Switch>
       </BrowserRouter>
     );

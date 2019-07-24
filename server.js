@@ -4,66 +4,33 @@ const express =require('express')
     , port = process.env.PORT || 4000
     , fs = require('fs')
     , mysql = require('mysql')
-    , data = fs.readFileSync('./database.json')
-    , conf = JSON.parse(data)
-    , multer = require('multer')
-    , upload = multer({dest: './upload'})
     , env = require('./env.config.js')
-    , cors = require('cors')
+    , path = require('path')
+    , conn = mysql.createConnection(env.info)
 
-app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-      conn = mysql.createConnection({
-        host:conf.host,
-        user:conf.user,
-        password:conf.password,
-        port:conf.port,
-        database:conf.database
-      })
-  conn.connect();
+
+conn.connect((err) => {
+  if(err){
+    console.log("SQL CONNECT ERROR: " + err);
+  }else{
+    console.log("SQL CONNECT SUCCESSFUL");
+  }
+});
+
+app.use('/',express.static(path.join(__dirname, './client/management/build')))
 
 auth = require('./route/auth.js')
 app.use('/auth', auth)
 
-  app.get('/api/customers', (req, res) => {
-    conn.query("SELECT * FROM CUSTOMER WHERE isDeleted=0", (err,rows, fields) => {
-      if(err) throw console.log(err);
-      res.send(rows);
-    })
-  })
+userInfo = require('./route/userInfo.js')
+app.use('/api', userInfo)
 
+app.get('/*',(req,res) => {
+  res.sendFile(path.join(__dirname,'/client/management/build','index.html'))
+})
 
-  app.post('/api/test', (req,res) => {
-    console.log(req.body.birthday);
-    res.send(req.body.test);
-  })
-
-  app.use('/image',express.static('./upload'));
-
-  app.post('/api/customers',upload.single('image'),(req,res) =>{
-    let sql = 'INSERT INTO CUSTOMER VALUES (null,?,?,?,?,?,now(),0)'
-      , image = '/image/' + req.file.filename
-      , name = req.body.name
-      , birthday = req.body.birthday
-      , gender = req.body.gender
-      , job = req.body.job
-      , params = [image,name,birthday,gender,job];
-
-      conn.query(sql,params, (err,rows,fields) => {
-        if(err) throw err
-        res.send(rows);
-      })
-  })
-
-  app.delete('/api/customers/:id', (req,res) => {
-    let sql = 'UPDATE CUSTOMER SET isDeleted = 1 WHERE id = ?'
-      , params = [req.params.id];
-      conn.query(sql,params, (err,rows,fields) => {
-        res.send(rows);
-      })
-  })
-
-  app.listen(env.port, () => {
-     console.log('server on...' + env.port + ' port')
+app.listen(port, () => {
+     console.log('server on...' + port + ' port')
   })

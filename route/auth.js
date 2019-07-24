@@ -14,15 +14,19 @@ router.use(bodyParser.urlencoded({extended:false}));
 
 const LoginUser = (id,pw,callback) => {
   let sql = 'SELECT * FROM MEMBER WHERE id="' + id +'"';
-  console.log(id,pw,'22');
+  console.log(id,pw);
   conn.query(sql,(err,rows) => {
-    if(rows.length === 0){
-      callback(0)
-    }else {
-      if(pw === rows[0].password){
-        callback(1)
+    if(err){
+      console.log(err);
+    }else{
+      if(rows.length === 0){
+        callback(0)
       }else {
-        callback(-1)
+        if(pw === rows[0].password){
+          callback(1)
+        }else {
+          callback(-1)
+        }
       }
     }
   })
@@ -31,8 +35,6 @@ const LoginUser = (id,pw,callback) => {
 router.post('/login', (req,res) => {
   let id =req.body.id
     , pw =req.body.pw
-
-    console.log(req.body);
     LoginUser(id,pw,(result) => {
       if(result === 1){
         req.session.login =result
@@ -51,6 +53,11 @@ router.get('/logined', (req,res) => {
   }else{
     res.json({isLogined:false})
   }
+})
+
+router.delete('/logout',(req,res) => {
+  req.session.destroy();
+  res.json({isLogined:false})
 })
 
 

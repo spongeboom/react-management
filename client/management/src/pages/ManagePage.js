@@ -6,6 +6,7 @@ import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
+import { Link as RouterLink } from 'react-router-dom';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -17,6 +18,11 @@ import InputBase from '@material-ui/core/InputBase';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
+import Button from '@material-ui/core/Button';
+import Drawer from '@material-ui/core/Drawer';
+import MenuItem from '@material-ui/core/MenuItem';
+import Link from '@material-ui/core/Link';
+import ServerError from './500';
 
 const styles = theme => ({
       root: {
@@ -36,9 +42,9 @@ const styles = theme => ({
         progress: {
         margin: theme.spacing.unit * 2
       },
-        grow: {
-          flexGrow: 1,
-        },
+      grow: {
+        flexGrow: 1,
+      },
       tableHead: {
         fontSize: '1.0rem'
       },
@@ -48,6 +54,7 @@ const styles = theme => ({
       },
       title: {
         display: 'none',
+        marginRight:'0.5em',
         [theme.breakpoints.up('sm')]: {
           display: 'block',
         },
@@ -116,7 +123,7 @@ class ManagePages extends React.Component {
     })
     this.callApi()
       .then(res => this.setState({customers: res}))
-      .catch(err => console.log(err));
+      .catch(err => this.setState({status:false}));
   }
 
   progress = () => {
@@ -128,7 +135,7 @@ class ManagePages extends React.Component {
     this.timer = setInterval(this.progress, 20);
     this.callApi()
       .then(res => this.setState({customers: res}))
-      .catch(err => console.log(err));
+      .catch(err => this.setState({status:false}));
   }
 
   callApi = async () => {
@@ -143,9 +150,17 @@ class ManagePages extends React.Component {
     this.setState(nextState);
   }
 
+  onLogout = async() => {
+    const url = '/auth/logout'
+    await (await fetch(url,{
+      method: 'DELETE'
+    }));
+    this.props.loginstate()
+  }
+
   render(){
     const filteredComponents = (data) => {
-      data =data.filter((c) => {
+      data = data.filter((c) => {
         return c.name.indexOf(this.state.searchKeyword) > -1;
       });
       return data.map((c) => {
@@ -153,55 +168,64 @@ class ManagePages extends React.Component {
         gender={c.gender} job={c.job} />
       });
     }
+    let login = this.props.login;
     const { classes } =this.props;
     const cellList = ["번호", "프로필 이미지", "이름", "생년월일", "성별" , "직업"]
     return(
       <div className={ classes.root}>
-      <AppBar position="static">
-      <Toolbar>
-        <Typography className={classes.title} variant="h6" color="inherit" noWrap>
-          고객 관리 시스템
-        </Typography>
-        <div className={classes.grow} />
-        <div className={classes.search}>
-          <div className={classes.searchIcon}>
-            <SearchIcon />
+        {this.state.status !== false ?
+          <div>
+            <AppBar position="static">
+              <Toolbar>
+                <Typography className={classes.title} variant="h6" color="inherit" noWrap>
+                  고객 관리 시스템
+                </Typography>
+                <div className={classes.search}>
+                  <div className={classes.searchIcon}>
+                    <SearchIcon />
+                  </div>
+                  <InputBase
+                    placeholder="고객 검색하기"
+                    classes={{
+                      root: classes.inputRoot,
+                      input: classes.inputInput,
+                    }}
+                    name ="searchKeyword"
+                    value={this.state.searchKeyword}
+                    onChange={this.handleValueChanges}
+                  />
+                </div>
+                <div className={classes.grow} />
+                { this.props.login === true &&
+                <Button color="inherit" href="/login" onClick={this.onLogout}>로그아웃</Button>
+                }
+              </Toolbar>
+            </AppBar>
+            <div className={classes.menu}>
+              <CustomerAdd stateRefresh={this.stateRefresh}/>
+            </div>
+            <Paper className={classes.paper}>
+              <Table>
+                <TableHead>
+                  { cellList.map((c,i) => {
+                    return <TableCell key={i} className={classes.tableHead}>{c}</TableCell>
+                  })}
+                </TableHead>
+                <TableBody>
+                  {this.state.customers ?
+                    filteredComponents(this.state.customers) :
+                    <TableRow>
+                      <TableCell colSpan="6" align="center">
+                        <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed} />
+                      </TableCell>
+                    </TableRow>
+                  }
+                </TableBody>
+              </Table>
+            </Paper>
           </div>
-          <InputBase
-            placeholder="검색하기"
-            classes={{
-              root: classes.inputRoot,
-              input: classes.inputInput,
-            }}
-            name ="searchKeyword"
-            value={this.state.searchKeyword}
-            onChange={this.handleValueChanges}
-          />
-        </div>
-      </Toolbar>
-    </AppBar>
-      <div className={classes.menu}>
-        <CustomerAdd stateRefresh={this.stateRefresh}/>
-      </div>
-      <Paper className={classes.paper}>
-        <Table>
-          <TableHead>
-            { cellList.map(c => {
-              return <TableCell className={classes.tableHead}>{c}</TableCell>
-            })}
-          </TableHead>
-          <TableBody>
-            {this.state.customers ?
-              filteredComponents(this.state.customers) :
-              <TableRow>
-                <TableCell colSpan="6" align="center">
-                  <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed} />
-                </TableCell>
-              </TableRow>
-            }
-          </TableBody>
-        </Table>
-      </Paper>
+          :<ServerError />
+        }
       </div>
     );
   }
