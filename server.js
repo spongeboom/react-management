@@ -31,6 +31,7 @@ app.get('/*',(req,res) => {
   res.sendFile(path.join(__dirname,'/client/management/build','index.html'))
 })
 
+
 app.listen(port, () => {
      console.log('server on...' + port + ' port')
   })
