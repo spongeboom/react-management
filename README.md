@@ -15,7 +15,7 @@
 ## 2.개발 환경
 - OS : Mac Mojave( version : 10.14.5 )
 - 개발 언어 : Javascript
-- 호스팅 : Google Cloud Platform App Engine
+- 호스팅 및 배포 : Google Cloud Platform App Engine
 
   #### **1.Client**
 
