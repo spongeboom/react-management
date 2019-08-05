@@ -25,31 +25,6 @@ const multer = Multer({
   }
 })
 
-router.post('/test', multer.single('file'),(req,res,next) => {
-  if(!req.file){
-    res.status(400).send('No file uploaded');
-    return;
-  }
-
-  const blob = bucket.file(Date.now() + req.file.originalname);
-  const blobStream = blob.createWriteStream({
-    resumable: false,
-  });
-
-  blobStream.on('error', err => {
-      next(err);
-  })
-
-  blobStream.on('finish', () => {
-    const publicUrl = format(
-      `https://storage.googleapis.com/${bucket.name}/${blob.name}`
-    );
-    res.status(200).send(publicUrl)
-  });
-
-  blobStream.end(req.file.buffer)
-})
-
 router.get('/customers', (req, res) => {
   conn.query("SELECT * FROM CUSTOMER WHERE isDeleted=0", (err,rows, fields) => {
     if(err){
